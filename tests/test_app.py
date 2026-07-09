@@ -1,28 +1,25 @@
-from fastapi.testclient import TestClient
+def test_unregister_participant(client):
+    # Arrange
+    email = "michael@mergington.edu"
 
-from src.app import app
+    # Act
+    response = client.delete(f"/activities/Chess Club/participants/{email}")
 
-
-def test_unregister_participant():
-    client = TestClient(app)
-
-    response = client.delete(
-        "/activities/Chess Club/participants/michael@mergington.edu"
-    )
-
+    # Assert
     assert response.status_code == 200
-    assert response.json()["message"] == "Removed michael@mergington.edu from Chess Club"
+    assert response.json()["message"] == f"Removed {email} from Chess Club"
 
     activities = client.get("/activities").json()
-    assert "michael@mergington.edu" not in activities["Chess Club"]["participants"]
+    assert email not in activities["Chess Club"]["participants"]
 
 
-def test_unregister_missing_participant():
-    client = TestClient(app)
+def test_unregister_missing_participant(client):
+    # Arrange
+    email = "not-a-member@example.com"
 
-    response = client.delete(
-        "/activities/Chess Club/participants/not-a-member@example.com"
-    )
+    # Act
+    response = client.delete(f"/activities/Chess Club/participants/{email}")
 
+    # Assert
     assert response.status_code == 404
     assert response.json()["detail"] == "Participant not found"
